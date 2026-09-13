@@ -148,6 +148,7 @@ body {
   padding: 0.8rem 0.9rem;
   transition: border-color 0.1s, transform 0.06s;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   user-select: none;
   outline: none;
 }

@@ -26,7 +26,8 @@ if (!CanvasRenderingContext2D.prototype.roundRect) {
 let audioCtx   = null;
 let analyser   = null;
 let masterGain = null;
-let audioReady = false;
+let ctxReady   = false;  // AudioContext created (within user gesture)
+let audioReady = false;  // buffers fully loaded
 const buffers  = {};
 
 const SOUND_MAP = {
@@ -39,8 +40,10 @@ const SOUND_MAP = {
   l: 'sounds/kick-bass.mp3',
 };
 
-async function initAudio() {
-  if (audioReady) return;
+/* Phase 1 — synchronous, must run WITHIN user gesture so iOS/Android
+   AudioContext unlock works. No await here. */
+function ensureContext() {
+  if (ctxReady) return;
   audioCtx   = new (window.AudioContext || window.webkitAudioContext)();
   masterGain = audioCtx.createGain();
   masterGain.gain.value = parseFloat(document.getElementById('volSlider').value);
@@ -48,7 +51,12 @@ async function initAudio() {
   analyser.fftSize = 256;
   masterGain.connect(analyser);
   analyser.connect(audioCtx.destination);
+  ctxReady = true;
+  loadBuffers(); // start background fetch, don't await
+}
 
+/* Phase 2 — async fetch, runs in background after context is ready */
+async function loadBuffers() {
   await Promise.all(
     Object.entries(SOUND_MAP).map(async ([key, url]) => {
       try {
@@ -273,8 +281,8 @@ function startMetro() {
 }
 function stopMetro() { clearInterval(metroInt); metroInt = null; }
 
-metroBtn.addEventListener('click', async () => {
-  if (!audioReady) await initAudio();
+metroBtn.addEventListener('click', () => {
+  ensureContext();
   metroOn = !metroOn;
   if (metroOn) {
     startMetro();
@@ -307,14 +315,14 @@ document.getElementById('volSlider').addEventListener('input', e => {
 function triggerPad(key) {
   const pad = PAD_MAP[key];
   if (!pad) return;
-  playSound(key);
-  animatePad(pad);
+  animatePad(pad);    // always immediate — no audio dependency
   registerHit();
   if (isRecording) recording.push({ key, t: Date.now() - recordStart });
+  playSound(key);     // silent if buffers not loaded yet (first tap)
 }
 
 /* ── Keyboard ── */
-document.addEventListener('keydown', async e => {
+document.addEventListener('keydown', e => {
   if (e.repeat) return;
   const key = e.key.toLowerCase();
 
@@ -322,7 +330,7 @@ document.addEventListener('keydown', async e => {
   if (key === '?' || e.key === '?') { toggleHelp(); return; }
   if (e.key === 'Escape') { toggleHelp(false); stopLoop(); return; }
 
-  /* Control shortcuts (don't need audio) */
+  /* Control shortcuts */
   if (key === 'r') { recordBtn.click(); return; }
   if (key === 'p') { if (!playBtn.disabled) { stopLoop(); playOnce(); } return; }
   if (key === 'o') { if (!loopBtn.disabled) loopBtn.click(); return; }
@@ -330,16 +338,18 @@ document.addEventListener('keydown', async e => {
 
   /* Pad keys */
   if (!PAD_MAP[key]) return;
-  if (!audioReady) await initAudio();
+  ensureContext();   // synchronous context creation within keyboard gesture
   triggerPad(key);
 });
 
 /* ── Pointer (click / touch) ── */
+/* passive:false lets us preventDefault so scroll doesn't steal the tap */
 document.querySelectorAll('.pad').forEach(pad => {
-  pad.addEventListener('pointerdown', async () => {
-    if (!audioReady) await initAudio();
+  pad.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    ensureContext();   // synchronous — AudioContext created within gesture
     triggerPad(pad.dataset.key);
-  });
+  }, { passive: false });
 });
 
 /* ═══════════════════════════════════════════
