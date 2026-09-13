@@ -114,6 +114,7 @@ const comboBoxEl = document.getElementById('comboBox');
 function registerHit() {
   hitCount++;
   hitCountEl.textContent = hitCount;
+  pulseTitleBeat();
 
   clearTimeout(comboTimer);
   combo = Math.min(combo + 1, 64);
@@ -137,27 +138,41 @@ let playTimers   = [];
 
 const recordBtn = document.getElementById('recordBtn');
 const playBtn   = document.getElementById('playBtn');
+const loopBtn   = document.getElementById('loopBtn');
 const clearBtn  = document.getElementById('clearBtn');
+
+/* ── Title beat pulse ── */
+const titleEl = document.querySelector('.title');
+function pulseTitleBeat() {
+  if (!titleEl) return;
+  titleEl.classList.remove('beat');
+  void titleEl.offsetWidth;
+  titleEl.classList.add('beat');
+  titleEl.addEventListener('animationend', () => titleEl.classList.remove('beat'), { once: true });
+}
 
 recordBtn.addEventListener('click', () => {
   isRecording = !isRecording;
   if (isRecording) {
+    stopLoop();
     recording   = [];
     recordStart = Date.now();
     recordBtn.classList.add('recording');
     recordBtn.innerHTML = '<span class="rec-dot"></span>Stop';
     playBtn.disabled  = true;
+    loopBtn.disabled  = true;
     clearBtn.disabled = true;
   } else {
     recordBtn.classList.remove('recording');
     recordBtn.innerHTML = '<span class="rec-dot"></span>Record';
     const has = recording.length > 0;
     playBtn.disabled  = !has;
+    loopBtn.disabled  = !has;
     clearBtn.disabled = !has;
   }
 });
 
-playBtn.addEventListener('click', () => {
+function playOnce() {
   if (!recording.length) return;
   playTimers.forEach(clearTimeout);
   playTimers = [];
@@ -167,15 +182,65 @@ playBtn.addEventListener('click', () => {
       animatePad(PAD_MAP[key]);
     }, t));
   });
+}
+
+playBtn.addEventListener('click', () => { stopLoop(); playOnce(); });
+
+/* ── Loop playback ── */
+let isLooping   = false;
+let loopTimeout = null;
+
+function stopLoop() {
+  isLooping = false;
+  clearTimeout(loopTimeout);
+  loopTimeout = null;
+  playTimers.forEach(clearTimeout);
+  playTimers = [];
+  loopBtn.classList.remove('looping');
+  loopBtn.textContent = '⟳ Loop';
+}
+
+function scheduleNextLoop() {
+  if (!isLooping || !recording.length) return;
+  const duration = recording[recording.length - 1].t + 300;
+  loopTimeout = setTimeout(() => {
+    if (!isLooping) return;
+    playOnce();
+    scheduleNextLoop();
+  }, duration);
+}
+
+loopBtn.addEventListener('click', () => {
+  if (!recording.length) return;
+  isLooping = !isLooping;
+  if (isLooping) {
+    loopBtn.classList.add('looping');
+    loopBtn.textContent = '⟳ Stop';
+    playOnce();
+    scheduleNextLoop();
+  } else {
+    stopLoop();
+  }
 });
 
 clearBtn.addEventListener('click', () => {
-  playTimers.forEach(clearTimeout);
+  stopLoop();
   playTimers   = [];
   recording    = [];
   playBtn.disabled  = true;
+  loopBtn.disabled  = true;
   clearBtn.disabled = true;
 });
+
+/* ── Help / shortcuts overlay ── */
+const helpOverlay = document.getElementById('helpOverlay');
+const helpClose   = document.getElementById('helpClose');
+
+function toggleHelp(force) {
+  const show = force !== undefined ? force : !helpOverlay.classList.contains('visible');
+  helpOverlay.classList.toggle('visible', show);
+}
+helpClose.addEventListener('click', () => toggleHelp(false));
 
 /* ═══════════════════════════════════════════
    METRONOME  — generated beep, no file needed
@@ -252,6 +317,18 @@ function triggerPad(key) {
 document.addEventListener('keydown', async e => {
   if (e.repeat) return;
   const key = e.key.toLowerCase();
+
+  /* Help overlay shortcuts */
+  if (key === '?' || e.key === '?') { toggleHelp(); return; }
+  if (e.key === 'Escape') { toggleHelp(false); stopLoop(); return; }
+
+  /* Control shortcuts (don't need audio) */
+  if (key === 'r') { recordBtn.click(); return; }
+  if (key === 'p') { if (!playBtn.disabled) { stopLoop(); playOnce(); } return; }
+  if (key === 'o') { if (!loopBtn.disabled) loopBtn.click(); return; }
+  if (key === 'm') { metroBtn.click(); return; }
+
+  /* Pad keys */
   if (!PAD_MAP[key]) return;
   if (!audioReady) await initAudio();
   triggerPad(key);

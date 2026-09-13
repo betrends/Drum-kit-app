@@ -82,6 +82,7 @@
           <span class="rec-dot" aria-hidden="true"></span>Record
         </button>
         <button class="ctrl-btn play-btn" id="playBtn" disabled>▶ Play</button>
+        <button class="ctrl-btn loop-btn" id="loopBtn" disabled>⟳ Loop</button>
         <button class="ctrl-btn" id="clearBtn" disabled>✕ Clear</button>
       </div>
 
@@ -105,6 +106,29 @@
     </footer>
 
   </div><!-- /.app -->
+
+  <!-- Help overlay -->
+  <div class="help-overlay" id="helpOverlay" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+    <div class="help-card">
+      <p class="help-title">Keyboard Shortcuts</p>
+      <div class="help-grid">
+        <div class="help-row"><span class="help-key">W</span><span class="help-lbl">Tom 1</span></div>
+        <div class="help-row"><span class="help-key">A</span><span class="help-lbl">Tom 2</span></div>
+        <div class="help-row"><span class="help-key">S</span><span class="help-lbl">Tom 3</span></div>
+        <div class="help-row"><span class="help-key">D</span><span class="help-lbl">Tom 4</span></div>
+        <div class="help-row"><span class="help-key">J</span><span class="help-lbl">Snare</span></div>
+        <div class="help-row"><span class="help-key">K</span><span class="help-lbl">Crash</span></div>
+        <div class="help-row"><span class="help-key">L</span><span class="help-lbl">Kick</span></div>
+        <div class="help-row"><span class="help-key">M</span><span class="help-lbl">Metro on/off</span></div>
+        <div class="help-row"><span class="help-key">R</span><span class="help-lbl">Record</span></div>
+        <div class="help-row"><span class="help-key">P</span><span class="help-lbl">Play back</span></div>
+        <div class="help-row"><span class="help-key">O</span><span class="help-lbl">Loop on/off</span></div>
+        <div class="help-row"><span class="help-key">Esc</span><span class="help-lbl">Stop loop</span></div>
+      </div>
+      <p class="help-hint">Press ? to toggle this panel</p>
+      <button class="help-close" id="helpClose">Close</button>
+    </div>
+  </div>
 
   <script src="index.js"></script>
 </body>
