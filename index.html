@@ -1,36 +1,111 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8" />
-    <title>Drum Kit</title>
-    <link rel="stylesheet" href="styles.css" />
-    <link
-      href="https://fonts.googleapis.com/css?family=Arvo"
-      rel="stylesheet"
-    />
-    <script
-      src="https://kit.fontawesome.com/9daf415874.js"
-      crossorigin="anonymous"
-    ></script>
-  </head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drum Kit — Betrends</title>
 
-  <body>
-    <h1 id="title">Drum 🥁 Kit</h1>
-    <div class="set">
-      <button class="w drum">w</button>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-      <button class="a drum">a</button>
-      <button class="s drum">s</button>
-      <button class="d drum">d</button>
-      <button class="j drum">j</button>
-      <button class="k drum">k</button>
-      <button class="l drum">l</button>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Ambient background -->
+  <canvas id="bgCanvas" aria-hidden="true"></canvas>
+
+  <div class="app">
+
+    <!-- Header -->
+    <header class="app-header">
+      <div>
+        <h1 class="title">DRUM KIT</h1>
+        <p class="subtitle">W &nbsp;A &nbsp;S &nbsp;D &nbsp;J &nbsp;K &nbsp;L &nbsp;· click or press keys</p>
+      </div>
+      <div class="stats">
+        <div class="stat-box">
+          <span class="stat-val" id="hitCount">0</span>
+          <span class="stat-lbl">HITS</span>
+        </div>
+        <div class="stat-box combo-box" id="comboBox">
+          <span class="stat-val" id="comboVal">×1</span>
+          <span class="stat-lbl">COMBO</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Frequency visualiser -->
+    <canvas id="vizCanvas" class="visualizer" aria-hidden="true"></canvas>
+
+    <!-- Drum pads -->
+    <div class="pads">
+      <div class="pad-row">
+        <button class="pad" data-key="w" data-name="Tom 1" style="--c:#8B5CF6;--cr:139,92,246">
+          <span class="pad-key">W</span>
+          <span class="pad-name">Tom 1</span>
+        </button>
+        <button class="pad" data-key="a" data-name="Tom 2" style="--c:#3B82F6;--cr:59,130,246">
+          <span class="pad-key">A</span>
+          <span class="pad-name">Tom 2</span>
+        </button>
+        <button class="pad" data-key="s" data-name="Tom 3" style="--c:#14B8A6;--cr:20,184,166">
+          <span class="pad-key">S</span>
+          <span class="pad-name">Tom 3</span>
+        </button>
+        <button class="pad" data-key="d" data-name="Tom 4" style="--c:#22C55E;--cr:34,197,94">
+          <span class="pad-key">D</span>
+          <span class="pad-name">Tom 4</span>
+        </button>
+      </div>
+      <div class="pad-row pad-row-btm">
+        <button class="pad" data-key="j" data-name="Snare" style="--c:#F97316;--cr:249,115,22">
+          <span class="pad-key">J</span>
+          <span class="pad-name">Snare</span>
+        </button>
+        <button class="pad" data-key="k" data-name="Crash" style="--c:#EAB308;--cr:234,179,8">
+          <span class="pad-key">K</span>
+          <span class="pad-name">Crash</span>
+        </button>
+        <button class="pad pad-kick" data-key="l" data-name="Kick" style="--c:#EC4899;--cr:236,72,153">
+          <span class="pad-key">L</span>
+          <span class="pad-name">Kick</span>
+        </button>
+      </div>
     </div>
 
-    <footer>
-      Made with ❤️ in London.
-      <p><s> AOW</s></p>
+    <!-- Controls -->
+    <div class="controls">
+      <div class="ctrl-group">
+        <button class="ctrl-btn record-btn" id="recordBtn">
+          <span class="rec-dot" aria-hidden="true"></span>Record
+        </button>
+        <button class="ctrl-btn play-btn" id="playBtn" disabled>▶ Play</button>
+        <button class="ctrl-btn" id="clearBtn" disabled>✕ Clear</button>
+      </div>
+
+      <div class="ctrl-group">
+        <button class="ctrl-btn metro-btn" id="metroBtn">♩ Metro</button>
+        <div class="bpm-wrap">
+          <input type="range" id="bpmSlider" class="slider" min="60" max="200" value="120" aria-label="BPM">
+          <span id="bpmVal">120</span><span class="unit">BPM</span>
+        </div>
+      </div>
+
+      <div class="ctrl-group">
+        <span class="ctrl-label">VOL</span>
+        <input type="range" id="volSlider" class="slider vol-slider" min="0" max="1" step="0.05" value="1" aria-label="Volume">
+      </div>
+    </div>
+
+    <footer class="app-footer">
+      <span>Betrends · Drum Kit</span>
+      <span class="sig" aria-hidden="true">Aow</span>
     </footer>
-    <script src="index.js"></script>
-  </body>
+
+  </div><!-- /.app -->
+
+  <script src="index.js"></script>
+</body>
 </html>
