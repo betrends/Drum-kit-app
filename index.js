@@ -45,6 +45,7 @@ const SOUND_MAP = {
 function ensureContext() {
   if (ctxReady) return;
   audioCtx   = new (window.AudioContext || window.webkitAudioContext)();
+  audioCtx.resume().catch(() => {}); // kick resume while still inside the gesture
   masterGain = audioCtx.createGain();
   masterGain.gain.value = parseFloat(document.getElementById('volSlider').value);
   analyser  = audioCtx.createAnalyser();
@@ -69,9 +70,11 @@ async function loadBuffers() {
   audioReady = true;
 }
 
-function playSound(key) {
+async function playSound(key) {
   if (!audioCtx || !buffers[key]) return;
-  if (audioCtx.state === 'suspended') audioCtx.resume();
+  if (audioCtx.state === 'suspended') {
+    try { await audioCtx.resume(); } catch {}
+  }
   const src = audioCtx.createBufferSource();
   src.buffer = buffers[key];
   src.connect(masterGain);
